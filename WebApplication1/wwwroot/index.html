@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Work Hours Tracker for Employees</title>
+    <style>
+        td {
+            padding: 5px;
+        }
+
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Work Hours Tracker for Employees</h2>
+    <div>
+        <input type="hidden" id="workPlanId" />
+        <p>
+            Employee ID:<br />
+            <input id="employeeId" type="number" />
+        </p>
+        <p>
+            Hours Worked:<br />
+            <input id="hoursWorked" type="number" />
+        </p>
+        <p>
+            <button id="saveBtn">Save</button>
+            <button id="resetBtn">Reset</button>
+        </p>
+    </div>
+    <table>
+        <thead><tr><th>Employee ID</th><th>Position</th><th>Hours Worked</th><th>Enterprise ID</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        async function getWorkPlans() {
+            const response = await fetch("/api/workplans", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const workPlans = await response.json();
+                const rows = document.querySelector("tbody");
+                rows.innerHTML = ""; // Очищаем предыдущие данные
+                workPlans.forEach(workPlan => rows.append(row(workPlan)));
+            } else {
+                console.error("Failed to load work plans");
+            }
+        }
+
+        async function getWorkPlan(id) {
+            const response = await fetch(`/api/workplans/${id}`, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const workPlan = await response.json();
+                document.getElementById("workPlanId").value = workPlan.workPlanId;
+                document.getElementById("employeeId").value = workPlan.employeeId;
+                document.getElementById("hoursWorked").value = workPlan.hours;
+            } else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+
+        async function createWorkPlan(employeeId, hoursWorked) {
+            const response = await fetch("/api/workplans", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    employeeId: parseInt(employeeId, 10),
+                    hours: parseInt(hoursWorked, 10)
+                })
+            });
+            if (response.ok === true) {
+                const workPlan = await response.json();
+                document.querySelector("tbody").append(row(workPlan));
+            } else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+
+        async function editWorkPlan(workPlanId, employeeId, hoursWorked) {
+            const response = await fetch(`/api/workplans/${workPlanId}`, {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    employeeId: parseInt(employeeId, 10),
+                    hours: parseInt(hoursWorked, 10)
+                })
+            });
+            if (response.ok === true) {
+                const workPlan = await response.json();
+                document.querySelector(`tr[data-rowid='${workPlan.workPlanId}']`).replaceWith(row(workPlan));
+            } else {
+                const error = await response.json();
+                console.error(error.message);
+            }
+        }
+
+        async function deleteWorkPlan(id) {
+            const response = await fetch(`/api/workplans/${id}`, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const workPlanRow = document.querySelector(`tr[data-rowid='${id}']`);
+                if (workPlanRow) {
+                    workPlanRow.remove();
+                }
+            } else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+
+        function reset() {
+            document.getElementById("workPlanId").value =
+                document.getElementById("employeeId").value =
+                document.getElementById("hoursWorked").value = "";
+        }
+
+        function row(workPlan) {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", workPlan.workPlanId);
+
+            const employeeIdTd = document.createElement("td");
+            employeeIdTd.append(workPlan.employeeId);
+            tr.append(employeeIdTd);
+
+            const positionTd = document.createElement("td");
+            positionTd.append(workPlan.employee ? workPlan.employee.position : "undefined");
+            tr.append(positionTd);
+
+            const hoursTd = document.createElement("td");
+            hoursTd.append(workPlan.hours);
+            tr.append(hoursTd);
+
+            const enterpriseIdTd = document.createElement("td");
+            enterpriseIdTd.append(workPlan.employee ? workPlan.employee.enterpriseId : "undefined");
+            tr.append(enterpriseIdTd);
+
+            const linksTd = document.createElement("td");
+
+            const editLink = document.createElement("button");
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async () => await getWorkPlan(workPlan.workPlanId));
+            linksTd.append(editLink);
+
+            const removeLink = document.createElement("button");
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await deleteWorkPlan(workPlan.workPlanId));
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+
+            return tr;
+        }
+
+        document.getElementById("resetBtn").addEventListener("click", () => reset());
+
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+            const id = document.getElementById("workPlanId").value;
+            const employeeId = document.getElementById("employeeId").value;
+            const hoursWorked = document.getElementById("hoursWorked").value;
+            if (id === "")
+                await createWorkPlan(employeeId, hoursWorked);
+            else
+                await editWorkPlan(id, employeeId, hoursWorked);
+            reset();
+            getWorkPlans();
+        });
+
+        getWorkPlans();
+    </script>
+</body>
+</html>
