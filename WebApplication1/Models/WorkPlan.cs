@@ -1,20 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// WorkPlan.cs
+using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebApplication1.Models
+[Table("workplan")]
+public class WorkPlan
 {
-    public class WorkPlan
-    {
-        [Key]
-        public int WorkPlanId { get; set; }
+    [Column("workplan_id")]
+    public int WorkPlanId { get; set; }
 
-        [Required]
-        public int EmployeeId { get; set; }
+    [Column("employee_id")]
+    public int EmployeeId { get; set; }
 
-        [ForeignKey("EmployeeId")]
-        public Employee Employee { get; set; }  // Навигационное свойство
+    [ForeignKey("EmployeeId")]
+    [JsonIgnore] // Игнорируем, чтобы избежать циклической зависимости
+    public required Employee Employee { get; set; } = null!; // Используем required и = null! для предупреждения
 
-        [Required]
-        public int Hours { get; set; }
-    }
+    [Column("hours")]
+    public int Hours { get; set; }
 }

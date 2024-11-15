@@ -1,26 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApplication1.Models
 {
     [Table("account")]
     public class Account
     {
-        [Key]
         [Column("account_id")]
-        public int AccountId { get; set; }
+        public int AccountId { get; set; } // Primary key
 
-        [Required]
         [Column("login")]
-        [StringLength(50)]
-        public string Login { get; set; }
+        public string Login { get; set; } = string.Empty; // Поле "login" в таблице
 
-        [Required]
         [Column("password")]
-        [StringLength(50)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty; // Поле "password" в таблице
 
         [Column("employee_id")]
-        public int EmployeeId { get; set; }
+        public int EmployeeId { get; set; } // Поле "employee_id" в таблице
+
+        public Employee Employee { get; set; } = null!; // Связь с Employee, чтобы избежать значений null
     }
 }

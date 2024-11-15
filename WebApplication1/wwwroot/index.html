@@ -38,37 +38,25 @@
 
     <script>
         async function getWorkPlans() {
+            console.log("Fetching work plans...");
             const response = await fetch("/api/workplans", {
                 method: "GET",
                 headers: { "Accept": "application/json" }
             });
             if (response.ok === true) {
                 const workPlans = await response.json();
+                console.log("Fetched data:", workPlans); // Debug log
+
                 const rows = document.querySelector("tbody");
-                rows.innerHTML = ""; // Очищаем предыдущие данные
+                rows.innerHTML = ""; // Clear previous data
                 workPlans.forEach(workPlan => rows.append(row(workPlan)));
             } else {
-                console.error("Failed to load work plans");
-            }
-        }
-
-        async function getWorkPlan(id) {
-            const response = await fetch(`/api/workplans/${id}`, {
-                method: "GET",
-                headers: { "Accept": "application/json" }
-            });
-            if (response.ok === true) {
-                const workPlan = await response.json();
-                document.getElementById("workPlanId").value = workPlan.workPlanId;
-                document.getElementById("employeeId").value = workPlan.employeeId;
-                document.getElementById("hoursWorked").value = workPlan.hours;
-            } else {
-                const error = await response.json();
-                console.log(error.message);
+                console.error("Failed to load work plans, status code:", response.status);
             }
         }
 
         async function createWorkPlan(employeeId, hoursWorked) {
+            console.log(`Creating work plan for Employee ID: ${employeeId}, Hours Worked: ${hoursWorked}`);
             const response = await fetch("/api/workplans", {
                 method: "POST",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
@@ -79,14 +67,16 @@
             });
             if (response.ok === true) {
                 const workPlan = await response.json();
+                console.log("Created work plan:", workPlan); // Debug log
+
                 document.querySelector("tbody").append(row(workPlan));
             } else {
-                const error = await response.json();
-                console.log(error.message);
+                console.error("Failed to create work plan, status code:", response.status);
             }
         }
 
         async function editWorkPlan(workPlanId, employeeId, hoursWorked) {
+            console.log(`Editing work plan ID: ${workPlanId}`);
             const response = await fetch(`/api/workplans/${workPlanId}`, {
                 method: "PUT",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
@@ -97,26 +87,29 @@
             });
             if (response.ok === true) {
                 const workPlan = await response.json();
+                console.log("Updated work plan:", workPlan); // Debug log
+
                 document.querySelector(`tr[data-rowid='${workPlan.workPlanId}']`).replaceWith(row(workPlan));
             } else {
-                const error = await response.json();
-                console.error(error.message);
+                console.error("Failed to edit work plan, status code:", response.status);
             }
         }
 
         async function deleteWorkPlan(id) {
+            console.log(`Deleting work plan ID: ${id}`);
             const response = await fetch(`/api/workplans/${id}`, {
                 method: "DELETE",
                 headers: { "Accept": "application/json" }
             });
             if (response.ok === true) {
+                console.log("Deleted work plan ID:", id); // Debug log
+
                 const workPlanRow = document.querySelector(`tr[data-rowid='${id}']`);
                 if (workPlanRow) {
                     workPlanRow.remove();
                 }
             } else {
-                const error = await response.json();
-                console.log(error.message);
+                console.error("Failed to delete work plan, status code:", response.status);
             }
         }
 
@@ -131,11 +124,11 @@
             tr.setAttribute("data-rowid", workPlan.workPlanId);
 
             const employeeIdTd = document.createElement("td");
-            employeeIdTd.append(workPlan.employeeId);
+            employeeIdTd.append(workPlan.employeeId ? workPlan.employeeId : "undefined");
             tr.append(employeeIdTd);
 
             const positionTd = document.createElement("td");
-            positionTd.append(workPlan.employee ? workPlan.employee.position : "undefined");
+            positionTd.append(workPlan.employeePosition ? workPlan.employeePosition : "undefined");
             tr.append(positionTd);
 
             const hoursTd = document.createElement("td");
@@ -143,7 +136,7 @@
             tr.append(hoursTd);
 
             const enterpriseIdTd = document.createElement("td");
-            enterpriseIdTd.append(workPlan.employee ? workPlan.employee.enterpriseId : "undefined");
+            enterpriseIdTd.append(workPlan.enterpriseId ? workPlan.enterpriseId : "undefined");
             tr.append(enterpriseIdTd);
 
             const linksTd = document.createElement("td");
@@ -168,12 +161,13 @@
             const id = document.getElementById("workPlanId").value;
             const employeeId = document.getElementById("employeeId").value;
             const hoursWorked = document.getElementById("hoursWorked").value;
-            if (id === "")
+            if (id === "") {
                 await createWorkPlan(employeeId, hoursWorked);
-            else
+            } else {
                 await editWorkPlan(id, employeeId, hoursWorked);
+            }
             reset();
-            getWorkPlans();
+            await getWorkPlans(); // Используем await
         });
 
         getWorkPlans();

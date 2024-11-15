@@ -1,23 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Updated Enterprise model
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebApplication1.Models
+[Table("enterprise")]
+public class Enterprise
 {
-    [Table("enterprise")]
-    public class Enterprise
-    {
-        [Key]
-        [Column("enterprise_id")]
-        public int EnterpriseId { get; set; }
+    [Column("enterprise_id")] // Должно соответствовать колонке в базе данных
+    public int EnterpriseId { get; set; }
 
-        [Required]
-        [Column("name")]
-        [StringLength(100)]
-        public string Name { get; set; }
+    [Column("name")]
+    public required string Name { get; set; }
 
-        [Required]
-        [Column("working_hours")]
-        [StringLength(100)]
-        public string WorkingHours { get; set; }
-    }
+    [Column("working_hours")]
+    public string WorkingHours { get; set; } = string.Empty;
+
+    public ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

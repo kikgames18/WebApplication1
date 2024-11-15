@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Login</title>
+    <style>
+        .login-container {
+            width: 300px;
+            margin: auto;
+            margin-top: 100px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .input-field {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div class="input-field">
+            <label for="username">Username:</label>
+            <input type="text" id="username" />
+        </div>
+        <div class="input-field">
+            <label for="password">Password:</label>
+            <input type="password" id="password" />
+        </div>
+        <button id="loginBtn">Login</button>
+    </div>
+
+    <script>
+        document.getElementById("loginBtn").addEventListener("click", async () => {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            console.log("Sending credentials:", { username, password }); // Debug log
+
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+
+            if (response.ok) {
+                alert("Login successful!");
+                window.location.href = "index.html"; // Перенаправляем на страницу с таблицей
+            } else {
+                alert("Login failed, please check your credentials.");
+            }
+        });
+    </script>
+</body>
+</html>
